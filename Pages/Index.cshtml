@@ -1,0 +1,66 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Home page";
+    var appData = new AppointmentData().GetScheduleData();
+}
+
+<ejs-uploader id="ics-import"
+              allowedExtensions=".ics"
+              cssClass="calendar-import"
+              showFileList="false"
+              selected="onFileSelect">
+    <e-uploader-buttons browse="Choose file"></e-uploader-buttons>
+</ejs-uploader>
+
+<ejs-schedule id="schedule"
+              currentView="Month"
+              selectedDate="new DateTime(2024,01,10)"
+              actionBegin="onActionBegin">
+    <e-schedule-eventsettings datasource="appData"></e-schedule-eventsettings>
+</ejs-schedule>
+
+<style>
+    .calendar-import.e-upload {
+        border: 0;
+    }
+
+    .calendar-import.e-upload .e-file-select-wrap .e-file-drop {
+        display: none;
+    }
+</style>
+
+<script>
+    function onActionBegin(args){
+        if (args.requestType === 'toolbarItemRendering'){
+            var exportItem = {
+                text: 'Export Calendar',
+                prefixIcon: 'e-icons e-export-excel',
+                click: function(){
+                    onExportClick('Export')
+                }
+            };
+            var printItem = {
+                text: 'Print',
+                prefixIcon: 'e-icons e-print',
+                click: function () {
+                    onExportClick('Print')
+                }
+            };
+            args.items.push(exportItem, printItem);
+        }
+    }
+
+    function onExportClick(action){
+        var schedulerInst = document.getElementById('schedule').ej2_instances[0];
+        if(action==='Export'){
+            schedulerInst.exportToICalendar("SchedulerEvents");
+        } else {
+            schedulerInst.print();
+        }
+    }
+
+    function onFileSelect(args){
+        document.getElementById('schedule').ej2_instances[0].importICalendar(args.event.target.files[0]);
+    }
+</script>
